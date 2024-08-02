@@ -17,6 +17,9 @@ export default function Blog(){
         setFormData({title:"", content:""});
         console.log(blogs)
     }
+    function removeBlog (i){
+        setBlogs(blogs.filter((blog, index) => index !== i));
+    }
 
     return(
         <>
@@ -60,6 +63,10 @@ export default function Blog(){
             <div className="blog" key={i}>
                 <h3>{blog.title}</h3>
                 <p>{blog.content}</p>
+                <div className="blog-btn">
+                    <button className="btn remove"
+                    onClick={() => removeBlog(i)}>DELETE</button>
+                </div>
                 
             </div>
         ))}
