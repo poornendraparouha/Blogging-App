@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef ,useState, useEffect } from "react";
 
 //Blogging App using Hooks
 export default function Blog(){
@@ -7,14 +7,26 @@ export default function Blog(){
     // const [content, setContent] = useState("");
     const [formData, setFormData] = useState({title:"", content:""});
     const [blogs, setBlogs] = useState([]);
+    const titleRef = useRef();
+
+    useEffect(() => {
+        titleRef.current.focus();
+    }, []);
 
     //Passing the synthetic event as argument to stop refreshing the page on submit
     function handleSubmit(e){
         e.preventDefault();
+        // Validation check for empty title or content
+        if (formData.title.trim() === "" || formData.content.trim() === "") {
+            alert("Title and Content are empty, Please write to add blog!");
+            return;
+        }
+
         setBlogs([{title: formData.title, content: formData.content}, ...blogs]);
         // setTitle("");
         // setContent("");
         setFormData({title:"", content:""});
+        titleRef.current.focus();
         console.log(blogs)
     }
     function removeBlog (i){
@@ -37,6 +49,7 @@ export default function Blog(){
                         <input className="input"
                                 placeholder="Enter the Title of the Blog here.."
                                 value = {formData.title}
+                                ref = {titleRef}
                                 onChange = {(e) => setFormData({ title: e.target.value, content: formData.content})}
                                 />
                 </Row >
