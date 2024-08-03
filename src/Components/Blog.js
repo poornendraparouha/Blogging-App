@@ -13,14 +13,18 @@ export default function Blog(){
         titleRef.current.focus();
     }, []);
 
+    useEffect(()=>{
+        if (blogs.length && blogs[0].title){
+            document.title = blogs[0].title;
+        }else {
+            document.title = "No Blogs!!";
+        }
+    }, [blogs]);
+
     //Passing the synthetic event as argument to stop refreshing the page on submit
     function handleSubmit(e){
         e.preventDefault();
         // Validation check for empty title or content
-        if (formData.title.trim() === "" || formData.content.trim() === "") {
-            alert("Title and Content are empty, Please write to add blog!");
-            return;
-        }
 
         setBlogs([{title: formData.title, content: formData.content}, ...blogs]);
         // setTitle("");
@@ -43,7 +47,6 @@ export default function Blog(){
 
         {/* Form for to write the blog */}
             <form onSubmit={handleSubmit}>
-
                 {/* Row component to create a row for first input field */}
                 <Row label="Title">
                         <input className="input"
@@ -59,6 +62,7 @@ export default function Blog(){
                         <textarea className="input content"
                                 placeholder="Content of the Blog goes here.."
                                 value = {formData.content}
+                                required
                                 onChange = {(e) => setFormData({ title: formData.title, content: e.target.value})}
                                 />
                 </Row >

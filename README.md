@@ -1,3 +1,5 @@
-# creting the blogging app using functional component while learning hooks
+#Blogging-App
 
+
+Creting blogging app using functional component while learning hooks
 Getting Started with Create React App
