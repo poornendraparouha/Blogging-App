@@ -1,4 +1,6 @@
 import { useRef ,useState, useEffect, useReducer } from "react";
+import {db} from "../Firebaseinit"
+import { collection, addDoc } from "firebase/firestore"; 
 
 function blogsReducer (state, action){
     switch (action.type) {
@@ -34,7 +36,7 @@ export default function Blog(){
     }, [blogs]);
 
     //Passing the synthetic event as argument to stop refreshing the page on submit
-    function handleSubmit(e){
+    async function handleSubmit(e){
         e.preventDefault();
         // Validation check for empty title or content
 
@@ -42,6 +44,13 @@ export default function Blog(){
         dispatch({type:"ADD", blog:{title: formData.title, content: formData.content}})
         // setTitle("");
         // setContent("");
+        // Add a new document with a generated id.
+            const docRef = await addDoc(collection(db, "blogs"), {
+                title: formData.title,
+                content: formData.content,
+                createdOn: new Date(),
+            });
+            console.log("Document written with ID: ", docRef.id);
         setFormData({title:"", content:""});
         titleRef.current.focus();
         console.log(blogs)
