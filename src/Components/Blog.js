@@ -1,17 +1,17 @@
-import { useRef ,useState, useEffect, useReducer } from "react";
+import { useRef ,useState, useEffect } from "react";
 import {db} from "../Firebaseinit"
-import { collection, addDoc } from "firebase/firestore"; 
+import { collection, setDoc, doc, getDocs } from "firebase/firestore"; 
 
-function blogsReducer (state, action){
-    switch (action.type) {
-        case 'ADD':
-            return [action.blog, ...state];
-        case 'REMOVE':
-            return state.filter((blog, index) => index !== action.index);
-        default:
-            return [];
-    } 
-}
+// function blogsReducer (state, action){
+//     switch (action.type) {
+//         case 'ADD':
+//             return [action.blog, ...state];
+//         case 'REMOVE':
+//             return state.filter((blog, index) => index !== action.index);
+//         default:
+//             return [];
+//     } 
+// }
 
 //Blogging App using Hooks
 export default function Blog(){
@@ -19,45 +19,63 @@ export default function Blog(){
     // const [title, setTitle] = useState("");
     // const [content, setContent] = useState("");
     const [formData, setFormData] = useState({title:"", content:""});
-    // const [blogs, setBlogs] = useState([]);
-    const [blogs, dispatch] = useReducer( blogsReducer, []);
-    const titleRef = useRef();
+    const [blogs, setBlogs] = useState([]);
+    // const [blogs, dispatch] = useReducer( blogsReducer, []);
+    const titleRef = useRef(null);
 
     useEffect(() => {
         titleRef.current.focus();
     }, []);
 
     useEffect(()=>{
-        if (blogs.length && blogs[0].title){
-            document.title = blogs[0].title;
-        }else {
-            document.title = "No Blogs!!";
-        }
-    }, [blogs]);
+        async function fatchData() {
+            const snapShot = await getDocs(collection(db, "blogs"));
+            console.log(snapShot);
+
+        const blogs = snapShot.docs.map((doc)=>{
+            return {
+                id: doc.id,
+                ...doc.data()
+            } 
+        });
+        console.log(blogs);
+        setBlogs(blogs)
+    }
+    fatchData();  
+    },[])
+
+    // useEffect(()=>{
+    //     if (blogs.length && blogs[0].title){
+    //         document.title = blogs[0].title;
+    //     }else {
+    //         document.title = "No Blogs!!";
+    //     }
+    // }, [blogs]);
 
     //Passing the synthetic event as argument to stop refreshing the page on submit
     async function handleSubmit(e){
         e.preventDefault();
         // Validation check for empty title or content
 
-        // setBlogs([{title: formData.title, content: formData.content}, ...blogs]);
-        dispatch({type:"ADD", blog:{title: formData.title, content: formData.content}})
+        setBlogs([{title: formData.title, content: formData.content}, ...blogs]);
+        // dispatch({type:"ADD", blog:{title: formData.title, content: formData.content}})
         // setTitle("");
         // setContent("");
         // Add a new document with a generated id.
-            const docRef = await addDoc(collection(db, "blogs"), {
+        const docRef = doc(collection(db, "blogs"));
+            await setDoc(docRef, {
                 title: formData.title,
                 content: formData.content,
                 createdOn: new Date(),
             });
-            console.log("Document written with ID: ", docRef.id);
+            // console.log("Document written with ID: ", docRef.id);
         setFormData({title:"", content:""});
         titleRef.current.focus();
-        console.log(blogs)
+        // console.log(blogs)
     }
     function removeBlog (i){
-        // setBlogs(blogs.filter((blog, index) => index !== i));
-        dispatch({type:"REMOVE", index: i })
+        setBlogs(blogs.filter((blog, index) => index !== i));
+        // dispatch({type:"REMOVE", index: i })
     }
 
     return(
