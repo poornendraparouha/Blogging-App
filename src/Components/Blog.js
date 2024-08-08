@@ -1,6 +1,6 @@
 import { useRef ,useState, useEffect } from "react";
 import {db} from "../Firebaseinit"
-import { collection, setDoc, doc, getDocs } from "firebase/firestore"; 
+import { collection, setDoc, doc, getDocs, onSnapshot, deleteDoc } from "firebase/firestore"; 
 
 // function blogsReducer (state, action){
 //     switch (action.type) {
@@ -28,11 +28,25 @@ export default function Blog(){
     }, []);
 
     useEffect(()=>{
-        async function fatchData() {
-            const snapShot = await getDocs(collection(db, "blogs"));
-            console.log(snapShot);
+    // this is for reading the data from the database
+    //     async function fatchData() {
+    //         const snapShot = await getDocs(collection(db, "blogs"));
+    //         console.log(snapShot);
 
-        const blogs = snapShot.docs.map((doc)=>{
+    //     const blogs = snapShot.docs.map((doc)=>{
+    //         return {
+    //             id: doc.id,
+    //             ...doc.data()
+    //         } 
+    //     });
+    //     console.log(blogs);
+    //     setBlogs(blogs)
+    // }
+    // fatchData();  
+
+        // this is for the getting realtime updates from the database
+        const unsub = onSnapshot(collection(db, "blogs"), (snapShot) => {
+            const blogs = snapShot.docs.map((doc)=>{
             return {
                 id: doc.id,
                 ...doc.data()
@@ -40,8 +54,8 @@ export default function Blog(){
         });
         console.log(blogs);
         setBlogs(blogs)
-    }
-    fatchData();  
+        // console.log("Current data: ", doc.data());
+    });
     },[])
 
     // useEffect(()=>{
@@ -57,7 +71,7 @@ export default function Blog(){
         e.preventDefault();
         // Validation check for empty title or content
 
-        setBlogs([{title: formData.title, content: formData.content}, ...blogs]);
+        // setBlogs([{title: formData.title, content: formData.content}, ...blogs]);
         // dispatch({type:"ADD", blog:{title: formData.title, content: formData.content}})
         // setTitle("");
         // setContent("");
@@ -73,8 +87,10 @@ export default function Blog(){
         titleRef.current.focus();
         // console.log(blogs)
     }
-    function removeBlog (i){
-        setBlogs(blogs.filter((blog, index) => index !== i));
+    async function removeBlog (id){
+        // setBlogs(blogs.filter((blog, index) => index !== i));
+        const docRef = doc(db, "blogs", id);
+        await deleteDoc(docRef);
         // dispatch({type:"REMOVE", index: i })
     }
 
@@ -123,7 +139,7 @@ export default function Blog(){
                 <p>{blog.content}</p>
                 <div className="blog-btn">
                     <button className="btn remove"
-                    onClick={() => removeBlog(i)}>DELETE</button>
+                    onClick={() => removeBlog(blog.id)}>DELETE</button>
                 </div>
                 
             </div>
